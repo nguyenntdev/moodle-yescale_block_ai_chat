@@ -17,40 +17,94 @@
 {{!
     @template block_ai_chat/message
 
-    Button to call ai_chat modal
+    Fluent UI inspired message component for AI Chat
+
+    Classes required for JS:
+    * copy (for copy functionality)
+
+    Context variables:
+    * sender - Message sender type ("agent" for user, "" for AI)
+    * content - HTML content of the message
+    * answer - Boolean indicating if this is a complete answer
 
     Example context (json):
     {
-        "message":"content",
-        "sender":""
+        "sender": "agent",
+        "content": "<p>Hello, how can I help you?</p>",
+        "answer": true
     }
 }}
-{{! Show message from user or ai }}
+
+{{! User message }}
 {{#sender}}
-<div class="message agent">    
-{{/sender}}
-{{^sender}}
-<div class="message ai">
-{{/sender}}
+<div class="message agent fade-in" role="article" aria-label="{{#str}}usermessage, block_ai_chat{{/str}}">
+    <div class="ai_chat_icon" role="img" aria-label="{{#str}}user, core{{/str}}">
+        <i class="fa fa-user" aria-hidden="true"></i>
+    </div>
     <div class="content">
-        <img src="{{globals.config.wwwroot}}/blocks/ai_chat/pix/ai-icon.svg" alt="" class="ai_chat_icon mr-2">
-        <div class="copiedtoast">{{#str}} copied, block_ai_chat {{/str}}</div>
-        <a class="copy"><i class="fa fa-copy"></i></a>
-        <div class="text">
+        <div class="text" role="text">
             {{{content}}}
         </div>
+        <button class="copy" 
+                type="button"
+                aria-label="{{#str}}copymessage, block_ai_chat{{/str}}"
+                title="{{#str}}copymessage, block_ai_chat{{/str}}">
+            <i class="fa fa-copy" aria-hidden="true"></i>
+        </button>
+        <div class="copiedtoast" role="status" aria-live="polite">
+            {{#str}}copied, block_ai_chat{{/str}}
+        </div>
     </div>
-</div>    
-{{! Insert placeholder in case of pending question }}
+</div>
+{{/sender}}
+
+{{! AI message }}
+{{^sender}}
+<div class="message ai fade-in" role="article" aria-label="{{#str}}aimessage, block_ai_chat{{/str}}">
+    <div class="ai_chat_icon" role="img" aria-label="{{#str}}aiassistant, block_ai_chat{{/str}}">
+        <img src="{{globals.config.wwwroot}}/blocks/ai_chat/pix/ai-icon.svg" 
+             alt="" 
+             aria-hidden="true">
+    </div>
+    <div class="content">
+        <div class="text" role="text">
+            {{{content}}}
+        </div>
+        <button class="copy" 
+                type="button"
+                aria-label="{{#str}}copymessage, block_ai_chat{{/str}}"
+                title="{{#str}}copymessage, block_ai_chat{{/str}}">
+            <i class="fa fa-copy" aria-hidden="true"></i>
+        </button>
+        <div class="copiedtoast" role="status" aria-live="polite">
+            {{#str}}copied, block_ai_chat{{/str}}
+        </div>
+    </div>
+</div>
+{{/sender}}
+
+{{! Loading state for pending AI response }}
 {{^answer}}
-<div class="message ai">
+<div class="message ai fade-in" role="article" aria-label="{{#str}}aiprocessing, block_ai_chat{{/str}}">
+    <div class="ai_chat_icon" role="img" aria-label="{{#str}}aiassistant, block_ai_chat{{/str}}">
+        <img src="{{globals.config.wwwroot}}/blocks/ai_chat/pix/ai-icon.svg" 
+             alt="" 
+             aria-hidden="true">
+    </div>
     <div class="content awaitanswer">
-    <img src="{{globals.config.wwwroot}}/blocks/ai_chat/pix/ai-icon.svg" alt="" class="ai_chat_icon mr-2">
-        <div class="copiedtoast">{{#str}} copied, block_ai_chat {{/str}}</div>
-        <a class="copy"><i class="fa fa-copy"></i></a>
-        <div class="text small">
-            <div class="spinner-border text-secondary" role="status"></div>
-            <span class="ml-2">{{#str}} awaitanswer, block_ai_chat {{/str}}</span>
+        <div class="text" role="status" aria-live="polite">
+            <div class="spinner-border" role="status" aria-hidden="true"></div>
+            <span>{{#str}}awaitanswer, block_ai_chat{{/str}}</span>
+        </div>
+        <button class="copy" 
+                type="button"
+                aria-label="{{#str}}copymessage, block_ai_chat{{/str}}"
+                title="{{#str}}copymessage, block_ai_chat{{/str}}"
+                style="display: none;">
+            <i class="fa fa-copy" aria-hidden="true"></i>
+        </button>
+        <div class="copiedtoast" role="status" aria-live="polite">
+            {{#str}}copied, block_ai_chat{{/str}}
         </div>
     </div>
 </div>

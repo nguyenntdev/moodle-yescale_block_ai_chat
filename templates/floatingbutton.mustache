@@ -17,15 +17,33 @@
 {{!
     @template block_ai_chat/floatingbutton
 
-    Button to call ai_chat modal
+    Fluent UI inspired floating action button for AI Chat
+
+    Classes required for JS:
+    * ai_chat_button (for modal trigger)
+
+    Context variables:
+    * title - Button title text
+    * arialabel - Accessibility label
 
     Example context (json):
     {
-        "title":"AI Companion",
-        "arialabel":"Open AI Companion"
+        "title": "AI Assistant",
+        "arialabel": "Open AI Assistant"
     }
 }}
-<button title="{{title}}" class="btn btn-icon icon-size-3" id="ai_chat_button"
-    aria-haspopup="dialog" aria-expanded="false" aria-label="{{arialabel}}">
-    <img src="{{config.wwwroot}}/blocks/ai_chat/pix/ai-icon.svg" alt="" class="ai_chat_icon">
+
+<button type="button"
+        id="ai_chat_button"
+        class="floating-action-button"
+        title="{{title}}"
+        aria-label="{{arialabel}}"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        role="button">
+    <img src="{{config.wwwroot}}/blocks/ai_chat/pix/ai-icon.svg" 
+         alt="" 
+         class="ai_chat_icon"
+         aria-hidden="true">
+    <span class="sr-only">{{arialabel}}</span>
 </button>

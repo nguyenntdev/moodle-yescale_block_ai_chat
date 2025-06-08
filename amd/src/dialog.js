@@ -31,9 +31,6 @@ import {renderWarningBox} from 'local_ai_manager/warningbox';
 import {getAiConfig} from 'local_ai_manager/config';
 import LocalStorage from 'core/localstorage';
 import {escapeHTML, hash, scrollToBottom} from './helper';
-import * as TinyAiUtils from 'tiny_ai/utils';
-import TinyAiEditorUtils from 'tiny_ai/editor_utils';
-import {constants as TinyAiConstants} from 'tiny_ai/constants';
 
 // Declare variables.
 const VIEW_CHATWINDOW = 'block_ai_chat_chatwindow';
@@ -295,39 +292,7 @@ async function showModal() {
             await displayAlert(notice, message);
         }
 
-        const aiUtilsButton = document.querySelector('[data-action="openaiutils"]');
-        const uniqid = Math.random().toString(16).slice(2);
 
-        await TinyAiUtils.init(uniqid, TinyAiConstants.modalModes.standalone);
-        aiUtilsButton.addEventListener('click', async() => {
-            // We try to find selected text or images and inject it into the AI tools.
-            const selectionObject = window.getSelection();
-            if (selectionObject.rangeCount > 0) {
-                // Safari browser does not really comply with MDN standard and sometimes has
-                // rangeCount === 0. So we have to check for this to avoid running into an error.
-                const range = selectionObject.getRangeAt(0);
-                const container = document.createElement('div');
-                container.appendChild(range.cloneContents());
-                const images = container.querySelectorAll('img');
-                if (images.length > 0 && images[0].src) {
-                    // If there are more than one we just use the first one.
-                    const image = images[0];
-                    // This should work for both external and data urls.
-                    const fetchResult = await fetch(image.src);
-                    const data = await fetchResult.blob();
-                    TinyAiUtils.getDatamanager(uniqid).setSelectionImg(data);
-                }
-
-                // If currently there is text selected we inject it.
-                if (selectionObject.toString() && selectionObject.toString().length > 0) {
-                    TinyAiUtils.getDatamanager(uniqid).setSelection(selectionObject.toString());
-                }
-            }
-
-            const editorUtils = new TinyAiEditorUtils(uniqid, 'block_ai_chat', contextid, userid, null);
-            TinyAiUtils.setEditorUtils(uniqid, editorUtils);
-            await editorUtils.displayDialogue();
-        });
 
         firstLoad = false;
     }
@@ -381,103 +346,108 @@ document.showConversation = showConversation;
  * @param {*} question
  */
 const enterQuestion = async(question) => {
+    try {
+        // Deny changing dialogs until answer present?
+        if (question == '') {
+            aiAtWork = false;
+            return;
+        }
+        const message = await userAllowed();
+        if (message !== '') {
+            const notice = await getString('noticenewquestion', 'block_ai_chat');
+            await displayAlert(notice, message);
+            aiAtWork = false;
+            return;
+        }
 
-    // Deny changing dialogs until answer present?
-    if (question == '') {
-        aiAtWork = false;
-        return;
-    }
-    const message = await userAllowed();
-    if (message !== '') {
-        const notice = await getString('noticenewquestion', 'block_ai_chat');
-        await displayAlert(notice, message);
-        aiAtWork = false;
-        return;
-    }
+        // Add to conversation, answer not yet available.
+        showMessage(question, 'self', false);
 
-    // Add to conversation, answer not yet available.
-    showMessage(question, 'self', false);
+        // For first message, add the personaprompt, even if empty.
+        // Since we dont know if the personaPrompt was changed, always replace it.
+        if (typeof conversation.messages[0] == 'undefined' || conversation.messages[0].sender !== 'system') {
+            conversation.messages.unshift({
+                'message': personaPrompt,
+                'sender': 'system'
+            });
+        } else {
+            // Replace personaPrompt.
+            conversation.messages[0] = {
+                'message': personaPrompt,
+                'sender': 'system'
+            };
+        }
 
-    // For first message, add the personaprompt, even if empty.
-    // Since we dont know if the personaPrompt was changed, always replace it.
-    if (typeof conversation.messages[0] == 'undefined' || conversation.messages[0].sender !== 'system') {
-        conversation.messages.unshift({
-            'message': personaPrompt,
-            'sender': 'system'
-        });
-    } else {
-        // Replace personaPrompt.
-        conversation.messages[0] = {
-            'message': personaPrompt,
-            'sender': 'system'
+        // Check history for length limit.
+        let convHistory = await checkMessageHistoryLengthLimit(conversation.messages);
+
+        // Since some models cant handle an empty system message, remove from convHistory.
+        if (personaPrompt.trim() === '' && convHistory[0].sender === 'system') {
+            convHistory.shift();
+        }
+        // Options, with conversation history.
+        const options = {
+            'component': 'block_ai_chat',
+            'conversationcontext': convHistory
         };
-    }
 
-    // Check history for length limit.
-    let convHistory = await checkMessageHistoryLengthLimit(conversation.messages);
-
-    // Since some models cant handle an empty system message, remove from convHistory.
-    if (personaPrompt.trim() === '' && convHistory[0].sender === 'system') {
-        convHistory.shift();
-    }
-    // Options, with conversation history.
-    const options = {
-        'component': 'block_ai_chat',
-        'conversationcontext': convHistory
-    };
-
-    // For a new conversation, get an id.
-    if (conversation.id === 0) {
-        try {
-            let idresult = await externalServices.getNewConversationId(contextid);
-            conversation.id = idresult.id;
-            conversation.timecreated = Math.floor(Date.now() / 1000);
-            setModalHeader(escapeHTML(question));
-        } catch (error) {
-            displayException(error);
+        // For a new conversation, get an id.
+        if (conversation.id === 0) {
+            try {
+                let idresult = await externalServices.getNewConversationId(contextid);
+                conversation.id = idresult.id;
+                conversation.timecreated = Math.floor(Date.now() / 1000);
+                setModalHeader(escapeHTML(question));
+            } catch (error) {
+                displayException(error);
+            }
+            options.forcenewitemid = true;
         }
-        options.forcenewitemid = true;
-    }
 
-    // Pass itemid / conversationid.
-    options.itemid = conversation.id;
+        // Pass itemid / conversationid.
+        options.itemid = conversation.id;
 
-    // Send to local_ai_manager.
-    let requestresult = await manager.askLocalAiManager('chat', question, contextid, options);
+        // Send to local_ai_manager.
+        let requestresult = await manager.askLocalAiManager('chat', question, contextid, options);
 
-    // Handle errors.
-    if (requestresult.code != 200) {
-        requestresult = await errorHandling(requestresult, question, contextid, options);
-    }
-
-    // Attach copy listener.
-    let copy = document.querySelector('.block_ai_chat_modal .awaitanswer .copy');
-    copy.addEventListener('mousedown', () => {
-        helper.copyToClipboard(copy);
-    });
-
-    // Write back answer.
-    await showReply(requestresult.result);
-
-    // Render mathjax.
-    helper.renderMathjax();
-
-    // Ai is done.
-    aiAtWork = false;
-
-    // Save new question and answer.
-    if (requestresult.code == 200) {
-        // If new conversation, sanitize the prompt for modal title and history.
-        if (conversation.messages.length == 0) {
-            question = escapeHTML(question);
+        // Handle errors.
+        if (requestresult.code != 200) {
+            requestresult = await errorHandling(requestresult, question, contextid, options);
         }
-        saveConversationLocally(question, requestresult.result);
-    }
 
-    // Update userquota.
-    const userquota = document.getElementById('block_ai_chat_userquota');
-    userquota.innerHTML = '';
-    renderUserQuota('#block_ai_chat_userquota', ['chat']);
+        // Attach copy listener.
+        let copy = document.querySelector('.block_ai_chat_modal .awaitanswer .copy');
+        copy.addEventListener('mousedown', () => {
+            helper.copyToClipboard(copy);
+        });
+
+        // Write back answer.
+        await showReply(requestresult.result);
+
+        // Render mathjax.
+        helper.renderMathjax();
+
+        // Save new question and answer.
+        if (requestresult.code == 200) {
+            // If new conversation, sanitize the prompt for modal title and history.
+            if (conversation.messages.length == 0) {
+                question = escapeHTML(question);
+            }
+            saveConversationLocally(question, requestresult.result);
+        }
+
+        // Update userquota.
+        const userquota = document.getElementById('block_ai_chat_userquota');
+        userquota.innerHTML = '';
+        renderUserQuota('#block_ai_chat_userquota', ['chat']);
+    } catch (error) {
+        // Handle any unexpected errors
+        console.error('Error in enterQuestion:', error);
+        displayException(error);
+    } finally {
+        // Always reset aiAtWork flag, regardless of success or failure
+        aiAtWork = false;
+    }
 };
 
 /**

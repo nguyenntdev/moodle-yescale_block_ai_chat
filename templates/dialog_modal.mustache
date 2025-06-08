@@ -17,55 +17,81 @@ along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 {{!
     @template block_ai_chat/dialog_modal
 
-    Template for iconpicker.
+    Fluent UI inspired dialog modal for AI Chat
 
     Classes required for JS:
-    * none
-
-    Data attributes required for JS:
-    * none
+    * block_ai_chat_modal
+    * block_ai_chat-input-id
+    * block_ai_chat-submit-id
 
     Context variables required for this template:
-    * none
+    * title - Dialog title
+    * showPersona - Whether to show persona options
+    * showOptions - Whether to show options
 
     Example context (json):
     {
-        "history": {
-            "message":"content",
-            "sender":"user"
-        }
+        "title": "AI Assistant",
+        "showPersona": true,
+        "showOptions": true
     }
 }}
 
-
 {{< core/modal }}
     {{$title}}
-        <div class="block_ai_chat_title">{{title}}</div>
+        <div class="block_ai_chat_title" role="heading" aria-level="1">{{title}}</div>
         {{> block_ai_chat/headeroptions }}
     {{/title}}
     {{$body}}
-        <div class="block_ai_chat_modal_body">
-            <div class="block_ai_chat-dialog">
-                <div class="block_ai_chat-output-wrapper">
-                    <div class="gradient-overlay"></div>
-                    <div class="infobox">
-                        <div data-content="local_ai_manager_infobox"></div>
-                        <div class="local_ai_manager-ai-warning"></div>
-                    </div>
-                    <div class="block_ai_chat-output">
+        <div class="block_ai_chat_modal_body" role="main">
+            <!-- Info section for notifications and warnings -->
+            <div class="infobox" role="region" aria-label="{{#str}}notifications, core{{/str}}">
+                <div data-content="local_ai_manager_infobox"></div>
+                <div class="local_ai_manager-ai-warning"></div>
+            </div>
+            
+            <!-- Main chat interface -->
+            <div class="block_ai_chat-dialog" role="log" aria-label="{{#str}}chathistory, block_ai_chat{{/str}}" aria-live="polite">
+                <!-- Chat messages container -->
+                <div class="block_ai_chat-output-wrapper" role="region" aria-label="{{#str}}conversation, block_ai_chat{{/str}}">
+                    <div class="block_ai_chat-output" id="chat-messages">
+                        <!-- Messages will be dynamically inserted here -->
                     </div>
                 </div>
-                <div class="block_ai_chat-input-wrapper">
-                    <div class="block_ai_chat-input">
-                        <button class="btn btn-icon ai_chat_icon_button" data-action="openaiutils" name="Open AI tools">
-                            <img src="{{globals.config.wwwroot}}/blocks/ai_chat/pix/ai-icon.svg" alt="" >
+                
+                <!-- Input area -->
+                <div class="block_ai_chat-input-wrapper" role="region" aria-label="{{#str}}messageinput, block_ai_chat{{/str}}">
+                    <form class="block_ai_chat-input" role="form" aria-label="{{#str}}sendmessage, block_ai_chat{{/str}}">
+                        <!-- Message input -->
+                        <textarea class="form-control" 
+                                  id="block_ai_chat-input-id"
+                                  name="message"
+                                  rows="1" 
+                                  placeholder="{{#str}}input, block_ai_chat{{/str}}"
+                                  aria-label="{{#str}}input, block_ai_chat{{/str}}"
+                                  aria-describedby="chat-input-help"
+                                  maxlength="4000"></textarea>
+                        
+                        <!-- Send button -->
+                        <button type="submit" 
+                                id="block_ai_chat-submit-id" 
+                                class="btn-send"
+                                aria-label="{{#str}}sendmessage, block_ai_chat{{/str}}"
+                                title="{{#str}}sendmessage, block_ai_chat{{/str}}">
+                            <i class="icon fa fa-paper-plane" aria-hidden="true"></i>
                         </button>
-                        <textarea class="form-control" id="block_ai_chat-input-id" rows="1" placeholder="{{#str}} input, block_ai_chat {{/str}}"></textarea>
-                        <button type="submit" id="block_ai_chat-submit-id" class="btn btn-primary">
-                            <i class="icon fa fa-arrow-right ml-2" aria-hidden="true"></i>
-                        </button>
+                    </form>
+                    
+                    <!-- Usage quota information -->
+                    <div id="block_ai_chat_userquota" 
+                         role="status" 
+                         aria-label="{{#str}}usagequota, block_ai_chat{{/str}}">
                     </div>
-                    <div id="block_ai_chat_userquota"></div>
+                    
+                    <!-- Screen reader helper text -->
+                    <div id="chat-input-help" class="sr-only">
+                        {{#str}}inputhelp, block_ai_chat{{/str}}
+                    </div>
                 </div>
             </div>
         </div>

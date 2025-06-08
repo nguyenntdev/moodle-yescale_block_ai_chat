@@ -17,40 +17,133 @@
 {{!
     @template block_ai_chat/headeroptions
 
-    Navigation options, as new dialog, show history etc.
+    Fluent UI inspired header options for AI Chat modal
+
+    Classes required for JS:
+    * Various IDs for option handlers
+
+    Context variables:
+    * badge - Optional badge information
+    * showPersona - Whether to show persona options
+    * showOptions - Whether to show general options
 
     Example context (json):
     {
         "badge": {
             "title": "Restricted",
-            "text": "Badge Example"
-        }
+            "text": "Private Chat"
+        },
+        "showPersona": true,
+        "showOptions": true
     }
 }}
-<div class="headeroptions">
-    {{#badge}} <span class="badge badge-pill badge-dark" title="{{title}}"><i class="fa fa-lock mr-1"></i>{{text}}</span> {{/badge}}
 
-    <div class="dropdown block_ai_chat_action_menu">
-        <button class="btn btn-icon icon-no-margin p-0 ml-2" data-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis"></i></button>
-        <div class="dropdown-menu dropdown-menu-right">
-            <a class="dropdown-item" href="#" id="block_ai_chat_new_dialog">{{#pix}} t/messages, core, {{#str}} newdialog, block_ai_chat {{/str}} {{/pix}}{{#str}} newdialog, block_ai_chat {{/str}}</a>
-            <a class="dropdown-item" href="#" id="block_ai_chat_show_history">{{#pix}} t/reload, core, {{#str}} showhistory, block_ai_chat {{/str}} {{/pix}}{{#str}} history, block_ai_chat {{/str}}</a>
+<div class="headeroptions" role="toolbar" aria-label="{{#str}}chatoptions, block_ai_chat{{/str}}">
+    {{#badge}}
+    <span class="status-badge" 
+          title="{{title}}" 
+          role="status"
+          aria-label="{{title}}">
+        <i class="fa fa-lock" aria-hidden="true"></i>
+        <span>{{text}}</span>
+    </span>
+    {{/badge}}
+
+    <!-- Main actions menu -->
+    <div class="dropdown block_ai_chat_action_menu" role="group" aria-label="{{#str}}chatactions, block_ai_chat{{/str}}">
+        <button type="button"
+                class="dropdown-toggle-btn" 
+                data-bs-toggle="dropdown" 
+                aria-expanded="false"
+                aria-haspopup="true"
+                aria-label="{{#str}}moreoptions, core{{/str}}">
+            <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
+        </button>
+        
+        <div class="dropdown-menu dropdown-menu-right" role="menu">
+            <button type="button" 
+                    class="dropdown-item" 
+                    id="block_ai_chat_new_dialog"
+                    role="menuitem">
+                <i class="fa fa-plus" aria-hidden="true"></i>
+                <span>{{#str}}newdialog, block_ai_chat{{/str}}</span>
+            </button>
+            
+            <button type="button" 
+                    class="dropdown-item" 
+                    id="block_ai_chat_show_history"
+                    role="menuitem">
+                <i class="fa fa-history" aria-hidden="true"></i>
+                <span>{{#str}}history, block_ai_chat{{/str}}</span>
+            </button>
+            
             {{#showPersona}}
-                <a class="dropdown-item" href="#" id="block_ai_chat_define_persona">{{#pix}} t/user, core, {{#str}} definepersona, block_ai_chat {{/str}} {{/pix}}{{#str}} definepersona, block_ai_chat {{/str}}</a>
+            <button type="button" 
+                    class="dropdown-item" 
+                    id="block_ai_chat_define_persona"
+                    role="menuitem">
+                <i class="fa fa-user-circle" aria-hidden="true"></i>
+                <span>{{#str}}definepersona, block_ai_chat{{/str}}</span>
+            </button>
             {{/showPersona}}
+            
             {{#showOptions}}
-                <a class="dropdown-item" href="#" id="block_ai_chat_options">{{#pix}} i/customfield, core, {{#str}} options {{/str}} {{/pix}}{{#str}} options {{/str}}</a>
+            <button type="button" 
+                    class="dropdown-item" 
+                    id="block_ai_chat_options"
+                    role="menuitem">
+                <i class="fa fa-cog" aria-hidden="true"></i>
+                <span>{{#str}}options{{/str}}</span>
+            </button>
             {{/showOptions}}
-            <a class="dropdown-item" href="#" id="block_ai_chat_delete_dialog">{{#pix}} t/delete, core, {{#str}} delete, block_ai_chat {{/str}} {{/pix}}{{#str}} delete, block_ai_chat {{/str}}</a>
+            
+            <div class="dropdown-divider" role="separator"></div>
+            
+            <button type="button" 
+                    class="dropdown-item danger-item" 
+                    id="block_ai_chat_delete_dialog"
+                    role="menuitem">
+                <i class="fa fa-trash" aria-hidden="true"></i>
+                <span>{{#str}}delete, block_ai_chat{{/str}}</span>
+            </button>
         </div>
     </div>
 
-    <div class="dropdown block_ai_chat_action_menu views">
-        <button class="btn btn-icon icon-no-margin p-0 ml-2" data-toggle="dropdown" aria-expanded="false"><i class="fa fa-window-restore"></i></button>
-        <div class="dropdown-menu dropdown-menu-right">
-            <a class="dropdown-item" href="#" id="block_ai_chat_chatwindow"><i class="icon fa fa-window-restore"></i>{{#str}} chatwindow, block_ai_chat {{/str}}</a>
-            <a class="dropdown-item" href="#" id="block_ai_chat_openfull"><i class="icon fa fa-up-right-and-down-left-from-center"></i>{{#str}} openfull, block_ai_chat {{/str}}</a>
-            <a class="dropdown-item" href="#" id="block_ai_chat_dockright"><i class="icon fa fa-window-restore"></i>{{#str}} dockright, block_ai_chat {{/str}}</a>
+    <!-- View mode options -->
+    <div class="dropdown block_ai_chat_action_menu views" role="group" aria-label="{{#str}}viewoptions, block_ai_chat{{/str}}">
+        <button type="button"
+                class="dropdown-toggle-btn" 
+                data-bs-toggle="dropdown" 
+                aria-expanded="false"
+                aria-haspopup="true"
+                aria-label="{{#str}}changeview, block_ai_chat{{/str}}">
+            <i class="fa fa-expand" aria-hidden="true"></i>
+        </button>
+        
+        <div class="dropdown-menu dropdown-menu-right" role="menu">
+            <button type="button" 
+                    class="dropdown-item" 
+                    id="block_ai_chat_chatwindow"
+                    role="menuitem">
+                <i class="fa fa-window-restore" aria-hidden="true"></i>
+                <span>{{#str}}chatwindow, block_ai_chat{{/str}}</span>
+            </button>
+            
+            <button type="button" 
+                    class="dropdown-item" 
+                    id="block_ai_chat_openfull"
+                    role="menuitem">
+                <i class="fa fa-expand" aria-hidden="true"></i>
+                <span>{{#str}}openfull, block_ai_chat{{/str}}</span>
+            </button>
+            
+            <button type="button" 
+                    class="dropdown-item" 
+                    id="block_ai_chat_dockright"
+                    role="menuitem">
+                <i class="fa fa-window-maximize" aria-hidden="true"></i>
+                <span>{{#str}}dockright, block_ai_chat{{/str}}</span>
+            </button>
         </div>
     </div>
 </div>

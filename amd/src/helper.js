@@ -122,7 +122,7 @@ export const hash = async(stringToHash) => {
  */
 export const renderMathjax = () => {
     // Render formulas with mathjax 2.7.9.
-    if (typeof window.MathJax !== "undefined") {
+    if (typeof window.MathJax !== "undefined" && window.MathJax.Hub && typeof window.MathJax.Hub.Config === "function") {
         // Change delimiters so they work with chatgpt.
         window.MathJax.Hub.Config({
             tex2jax: {
@@ -137,7 +137,9 @@ export const renderMathjax = () => {
             // Claude says: This works because you're essentially giving MathJax two chances to render - the first call
             // queues it up, and the second call (Moodle's built-in function) ensures it completes. While it might seem
             // redundant, if it's working reliably, there's nothing wrong with this approach.
-            window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub, content]);
+            if (window.MathJax.Hub.Queue && typeof window.MathJax.Hub.Queue === "function") {
+                window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub, content]);
+            }
             typeset(content);
         }
     }
