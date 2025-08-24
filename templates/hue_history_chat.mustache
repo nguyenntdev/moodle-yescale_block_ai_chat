@@ -1,0 +1,268 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template block_ai_chat/hue_history_chat
+    
+    Specialized chat interface for Hue History Education
+    
+    Classes required for JS:
+    * none
+    
+    Data attributes required for JS:
+    * data-action="chat-action"
+    * data-persona="selected-persona"
+    
+    Context variables required for this template:
+    * contextid - The context ID
+    * selectedpersona - The selected historical persona
+    * availablepersonas - List of available historical personas
+    * learningpath - Current learning path information
+    * culturalcontext - Cultural context information
+}}
+
+<div class="hue-history-chat-container" data-contextid="{{contextid}}">
+    
+    <!-- Header with Hue History branding -->
+    <div class="hue-history-header">
+        <div class="hue-history-logo">
+            <img src="{{pixurl}}/ai-icon.svg" alt="AI Chat Lịch sử Huế" class="hue-history-icon">
+            <h2 class="hue-history-title">{{#str}}ai_chat, block_ai_chat{{/str}}</h2>
+        </div>
+        <div class="hue-history-subtitle">
+            <span class="vietnamese-text">Khám phá Lịch sử và Văn hóa Huế</span>
+            <span class="english-text">Discover Hue's History and Culture</span>
+        </div>
+    </div>
+
+    <!-- Historical Persona Selection -->
+    <div class="persona-selection-section">
+        <h3 class="section-title">{{#str}}historical_figures, block_ai_chat{{/str}}</h3>
+        <div class="persona-grid">
+            {{#availablepersonas}}
+            <div class="persona-card" data-persona-id="{{id}}" data-action="select-persona">
+                <div class="persona-avatar">
+                    <img src="{{pixurl}}/persona-{{type}}.svg" alt="{{name}}" class="persona-image">
+                </div>
+                <div class="persona-info">
+                    <h4 class="persona-name">{{name}}</h4>
+                    <p class="persona-period">{{period}}</p>
+                    <p class="persona-expertise">{{expertise}}</p>
+                </div>
+                <div class="persona-select-btn">
+                    <button class="btn btn-primary" data-action="select-persona" data-persona-id="{{id}}">
+                        {{#str}}select, core{{/str}}
+                    </button>
+                </div>
+            </div>
+            {{/availablepersonas}}
+        </div>
+    </div>
+
+    <!-- Learning Path Information -->
+    <div class="learning-path-section">
+        <h3 class="section-title">{{#str}}learning_path, block_ai_chat{{/str}}</h3>
+        <div class="learning-path-timeline">
+            {{#learningpath}}
+            <div class="path-level path-{{level}}">
+                <div class="path-level-header">
+                    <h4 class="path-level-title">{{title}}</h4>
+                    <span class="path-level-badge">{{level}}</span>
+                </div>
+                <div class="path-level-content">
+                    <ul class="path-topics">
+                        {{#topics}}
+                        <li class="path-topic">{{.}}</li>
+                        {{/topics}}
+                    </ul>
+                    <div class="path-personas">
+                        <span class="path-personas-label">Nhân vật lịch sử:</span>
+                        {{#personas}}
+                        <span class="path-persona-tag">{{.}}</span>
+                        {{/personas}}
+                    </div>
+                </div>
+            </div>
+            {{/learningpath}}
+        </div>
+    </div>
+
+    <!-- Cultural Context Information -->
+    <div class="cultural-context-section">
+        <h3 class="section-title">{{#str}}cultural_heritage, block_ai_chat{{/str}}</h3>
+        <div class="cultural-highlights">
+            {{#culturalcontext}}
+            <div class="cultural-item">
+                <div class="cultural-icon">
+                    <i class="fa fa-{{icon}}"></i>
+                </div>
+                <div class="cultural-content">
+                    <h4 class="cultural-title">{{title}}</h4>
+                    <p class="cultural-description">{{description}}</p>
+                </div>
+            </div>
+            {{/culturalcontext}}
+        </div>
+    </div>
+
+    <!-- Chat Interface -->
+    <div class="chat-interface">
+        <div class="chat-header">
+            <div class="selected-persona-info">
+                {{#selectedpersona}}
+                <div class="current-persona">
+                    <img src="{{pixurl}}/persona-{{type}}.svg" alt="{{name}}" class="current-persona-avatar">
+                    <div class="current-persona-details">
+                        <h4 class="current-persona-name">{{name}}</h4>
+                        <p class="current-persona-context">{{context}}</p>
+                    </div>
+                </div>
+                {{/selectedpersona}}
+            </div>
+            <div class="chat-controls">
+                <button class="btn btn-secondary" data-action="change-persona">
+                    <i class="fa fa-exchange-alt"></i> {{#str}}change_persona, block_ai_chat{{/str}}
+                </button>
+                <button class="btn btn-secondary" data-action="show-learning-path">
+                    <i class="fa fa-road"></i> {{#str}}learning_path, block_ai_chat{{/str}}
+                </button>
+            </div>
+        </div>
+
+        <!-- Chat Messages Area -->
+        <div class="chat-messages" id="chat-messages">
+            <!-- Messages will be dynamically inserted here -->
+        </div>
+
+        <!-- Chat Input Area -->
+        <div class="chat-input-area">
+            <div class="input-suggestions">
+                <span class="suggestions-label">{{#str}}suggested_questions, block_ai_chat{{/str}}:</span>
+                <div class="suggestion-chips">
+                    <button class="suggestion-chip" data-suggestion="Kể cho tôi về lịch sử Huế">
+                        Kể cho tôi về lịch sử Huế
+                    </button>
+                    <button class="suggestion-chip" data-suggestion="Giải thích về kiến trúc Hoàng thành">
+                        Giải thích về kiến trúc Hoàng thành
+                    </button>
+                    <button class="suggestion-chip" data-suggestion="Văn hóa truyền thống Huế như thế nào?">
+                        Văn hóa truyền thống Huế như thế nào?
+                    </button>
+                </div>
+            </div>
+            
+            <div class="chat-input-container">
+                <textarea 
+                    class="chat-input" 
+                    id="chat-input" 
+                    placeholder="{{#str}}inputhelp, block_ai_chat{{/str}}"
+                    rows="3"
+                ></textarea>
+                <button class="btn btn-primary send-button" data-action="send-message" disabled>
+                    <i class="fa fa-paper-plane"></i> {{#str}}sendmessage, block_ai_chat{{/str}}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assessment Section -->
+    <div class="assessment-section">
+        <h3 class="section-title">{{#str}}assessment, block_ai_chat{{/str}}</h3>
+        <div class="assessment-options">
+            <button class="btn btn-outline-primary" data-action="start-quiz" data-level="beginner">
+                {{#str}}beginner_quiz, block_ai_chat{{/str}}
+            </button>
+            <button class="btn btn-outline-primary" data-action="start-quiz" data-level="intermediate">
+                {{#str}}intermediate_quiz, block_ai_chat{{/str}}
+            </button>
+            <button class="btn btn-outline-primary" data-action="start-quiz" data-level="advanced">
+                {{#str}}advanced_quiz, block_ai_chat{{/str}}
+            </button>
+        </div>
+    </div>
+
+    <!-- Progress Tracking -->
+    <div class="progress-section">
+        <h3 class="section-title">{{#str}}learning_progress, block_ai_chat{{/str}}</h3>
+        <div class="progress-overview">
+            {{#progress}}
+            <div class="progress-area">
+                <div class="progress-header">
+                    <span class="progress-area-name">{{areaname}}</span>
+                    <span class="progress-percentage">{{percentage}}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{percentage}}%"></div>
+                </div>
+            </div>
+            {{/progress}}
+        </div>
+    </div>
+
+    <!-- Footer with Cultural Information -->
+    <div class="hue-history-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>{{#str}}about_hue, block_ai_chat{{/str}}</h4>
+                <p>{{#str}}hue_description, block_ai_chat{{/str}}</p>
+            </div>
+            <div class="footer-section">
+                <h4>{{#str}}unesco_heritage, block_ai_chat{{/str}}</h4>
+                <p>{{#str}}unesco_description, block_ai_chat{{/str}}</p>
+            </div>
+            <div class="footer-section">
+                <h4>{{#str}}contact_info, block_ai_chat{{/str}}</h4>
+                <p>{{#str}}contact_description, block_ai_chat{{/str}}</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 AI Chat Lịch sử Huế - {{#str}}developed_for, block_ai_chat{{/str}}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loading-overlay" style="display: none;">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">{{#str}}aiprocessing, block_ai_chat{{/str}}</p>
+    </div>
+</div>
+
+<!-- Quiz Modal -->
+<div class="modal fade" id="quiz-modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="quiz-modal-title">{{#str}}quiz_title, block_ai_chat{{/str}}</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="quiz-modal-body">
+                <!-- Quiz content will be dynamically inserted here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    {{#str}}close, core{{/str}}
+                </button>
+                <button type="button" class="btn btn-primary" id="submit-quiz">
+                    {{#str}}submit, core{{/str}}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -25,11 +25,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->release = '1.1.5';
-$plugin->version = 2025022205;
+$plugin->release = '1.2.0';
+$plugin->version = 2025022300;
 $plugin->requires = 2024042200;
 $plugin->component = 'block_ai_chat';
-$plugin->maturity = MATURITY_STABLE;
+$plugin->maturity = MATURITY_ALPHA;
 $plugin->dependencies = [
     'local_ai_manager' => 2025022100,
     'tiny_ai' => 2025022100,
